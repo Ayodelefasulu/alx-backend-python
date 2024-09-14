@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import patch
 from utils import access_nested_map, get_json, memoize
 from parameterized import parameterized
-
+from client import GithubOrgClient
 
 class TestAccessNestedMap(unittest.TestCase):
     """Test case for the access_nested_map function."""
@@ -98,6 +98,31 @@ class TestMemoize(unittest.TestCase):
 
             # Ensure that a_method is only called once
             mock_method.assert_called_once()
+
+
+class TestGithubOrgClient(unittest.TestCase):
+    """Test cases for the GithubOrgClient class.
+    """
+
+    @parameterized.expand([
+        ("google", "https://api.github.com/orgs/google"),
+        ("abc", "https://api.github.com/orgs/abc"),
+    ])
+    @patch('client.get_json')
+    def test_org(self, org_name: str, expected_url: str, mock_get_json: patch):
+        """Test that GithubOrgClient.org returns the correct value.
+        """
+        client = GithubOrgClient(org_name)
+        mock_get_json.return_value = {"repos_url": "fake_url"}
+
+        # Call the method
+        result = client.org
+
+        # Check that get_json was called once with the expected URL
+        mock_get_json.assert_called_once_with(expected_url)
+
+        # Check the returned value
+        self.assertEqual(result, {"repos_url": "fake_url"})
 
 
 if __name__ == "__main__":
